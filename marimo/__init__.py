@@ -56,6 +56,7 @@ __all__ = [
     "left",
     "lru_cache",
     "md",
+    "register_shortcode",
     "mermaid",
     "mpl",
     "nav_menu",
@@ -99,7 +100,7 @@ from marimo._output.doc import doc
 from marimo._output.formatting import as_html, iframe, plain
 from marimo._output.hypertext import Html
 from marimo._output.justify import center, left, right
-from marimo._output.md import latex, md
+from marimo._output.md import latex, md, register_shortcode
 from marimo._output.outline import outline
 from marimo._output.show_code import show_code
 from marimo._plugins import ui

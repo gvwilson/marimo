@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from inline_snapshot import snapshot
 
-from marimo._output.md import _md, latex
+from marimo._output.md import _md, latex, register_shortcode
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -736,6 +736,67 @@ def test_md_math_normalization_skips_fenced_and_inline_code() -> None:
     assert ":math:`y`" not in result
     assert result.count("<marimo-tex") == 1
     assert "||(y||)" in result
+
+
+def test_md_shortcode_basic() -> None:
+    # Register a shortcode that returns static HTML and verify it is expanded
+    @register_shortcode("test_greeting")
+    def greeting(
+        _pargs: list[str], _kwargs: dict[str, str], _context: object
+    ) -> str:
+        return "<strong>Hello, World!</strong>"
+
+    result = _md("[% test_greeting %]", apply_markdown_class=False).text
+    assert "<strong>Hello, World!</strong>" in result
+    assert "[%" not in result
+
+
+def test_md_shortcode_positional_args() -> None:
+    # Positional string arguments are passed as pargs
+    @register_shortcode("test_badge")
+    def badge(
+        pargs: list[str], _kwargs: dict[str, str], _context: object
+    ) -> str:
+        label = pargs[0] if pargs else "default"
+        return f'<span class="badge">{label}</span>'
+
+    result = _md("[% test_badge 'Python' %]", apply_markdown_class=False).text
+    assert '<span class="badge">Python</span>' in result
+
+
+def test_md_shortcode_keyword_args() -> None:
+    # Keyword arguments are passed as kwargs
+    @register_shortcode("test_alert")
+    def alert(
+        _pargs: list[str], kwargs: dict[str, str], _context: object
+    ) -> str:
+        level = kwargs.get("level", "info")
+        message = kwargs.get("message", "")
+        return f'<div class="alert alert-{level}">{message}</div>'
+
+    result = _md(
+        "[% test_alert message='Watch out!' level=warning %]",
+        apply_markdown_class=False,
+    ).text
+    assert '<div class="alert alert-warning">Watch out!</div>' in result
+
+
+def test_md_shortcode_mixed_with_markdown() -> None:
+    # Shortcode output is inserted before markdown processing, so surrounding
+    # markdown (bold, paragraphs) is still rendered normally
+    @register_shortcode("test_divider")
+    def divider(
+        _pargs: list[str], _kwargs: dict[str, str], _context: object
+    ) -> str:
+        return "<hr>"
+
+    result = _md(
+        "Before\n\n[% test_divider %]\n\nAfter **bold**",
+        apply_markdown_class=False,
+    ).text
+    assert "Before" in result
+    assert "<hr>" in result
+    assert "<strong>bold</strong>" in result
 
 
 def test_md_display_math_format_preserved() -> None:

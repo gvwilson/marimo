@@ -24,6 +24,10 @@ from marimo._output.md_extensions.flexible_indent import (
     FlexibleIndentExtension,
 )
 from marimo._output.md_extensions.iconify import IconifyExtension
+from marimo._output.md_extensions.shortcodes_ext import (
+    ShortcodesExtension,
+    register_shortcode,  # noqa: F401
+)
 from marimo._output.rich_help import mddoc
 from marimo._utils.platform import is_pyodide
 from marimo._utils.url import is_url
@@ -169,6 +173,8 @@ def _has_module(module_name: str) -> bool:
 @cache
 def _get_extensions() -> list[Union[str, markdown.Extension]]:
     extensions: list[Union[str, markdown.Extension]] = [
+        # Shortcodes -- must run first so output is visible to all later processors
+        ShortcodesExtension(),
         # Syntax highlighting
         PyconDetectorExtension(),  # Python console detection (run before highlight)
         "pymdownx.highlight",

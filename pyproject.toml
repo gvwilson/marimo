@@ -16,6 +16,8 @@ dependencies = [
     "jedi>=0.18.0",
     # compile markdown to html
     "markdown>=3.6,<4",
+    # shortcode processing in markdown (e.g. [% tag arg key=val %])
+    "shortcodes>=5.0",
     # add features to markdown
     # Pinned to specific version for introduction of codeblock handling.
     "pymdown-extensions>=10.15,<11",
